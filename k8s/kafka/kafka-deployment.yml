@@ -13,9 +13,29 @@ spec:
       labels:
         app: kafka
     spec:
+      initContainers:
+        - name: volume-permissions
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /bitnami/kafka/config
+              chmod -R 777 /bitnami/kafka
+              chown -R 1001:1001 /bitnami/kafka
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: /bitnami/kafka
+              name: kafka-data
+      securityContext:
+        fsGroup: 1001
       containers:
         - name: kafka
           image: bitnami/kafka:latest
+          securityContext:
+            runAsUser: 1001
+            runAsNonRoot: true
           resources:
             limits:
               memory: "512Mi"
